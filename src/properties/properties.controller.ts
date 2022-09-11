@@ -29,15 +29,12 @@ export class PropertiesController {
   @Roles('ADMIN')
   @UseGuards(RolesGuards)
   @Get()
-  getAllProperties() {
-    return this.propertiesService.getAllProperties();
-  }
-
-  @Roles('ADMIN')
-  @UseGuards(RolesGuards)
-  @Get('/:value')
-  getPropertiesByCategory(@Query('category_id') category_id: number = 1) {
-    return this.propertiesService.getPropertiesByCategory(category_id);
+  index(@Query('category_id') category_id: number = 1) {
+    if (category_id == 1) {
+      return this.propertiesService.findAll();
+    } else if (category_id > 1) {
+      return this.propertiesService.getPropertiesByCategory(category_id);
+    }
   }
 
   @Get('/:id')

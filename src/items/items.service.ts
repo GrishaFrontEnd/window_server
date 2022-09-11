@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { FileService } from 'src/file/file.service';
@@ -134,7 +139,17 @@ export class ItemsService {
   }
 
   async findOne(id: number) {
-    return await this.itemRepository.findByPk(id, { include: { all: true } });
+    const item = await this.itemRepository.findByPk(id);
+    if (!item) {
+      throw new NotFoundException('Такого предмета не существует');
+    }
+    const properties = await this.itemPropertyRepostitory.findAll({
+      where: { item_id: id },
+    });
+    return {
+      item,
+      _properties: properties,
+    };
   }
 
   async update(updateItemDto: UpdateItemDto, image: any) {
