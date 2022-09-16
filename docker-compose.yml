@@ -1,4 +1,4 @@
-version: '1.0'
+version: '3'
 
 services:
   main:
@@ -20,14 +20,14 @@ services:
   postgres:
     container_name: postgres
     image: postgres:12
-    .env_file:
+    env_file:
       - .development.env
     environment:
       PG_DATA: var/lib/postgresql/data
     ports:
       - 5432:5432
     volumes:
-      - pgdata: var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
     restart: always
 volumes:
   pgdata:

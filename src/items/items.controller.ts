@@ -40,7 +40,7 @@ export class ItemsController {
     @Query('category_id') category_id: number = 1,
     @Query('title') title: string = '',
   ) {
-    limit = limit > 16 ? 16 : limit;
+    limit = limit > 50 ? 50 : limit;
     let offset = limit * page - limit;
     title = title.toLowerCase();
     if (category_id == 1 && title == '') {

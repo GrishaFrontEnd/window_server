@@ -15,16 +15,6 @@ export class PropertiesService {
     private categoryService: CategoriesService,
   ) {}
   async createProperty(dto: CreatePropertyDto) {
-    console.log(dto);
-    const property = await this.propertyRepository.findOne({
-      where: { title: dto.title },
-    });
-    if (property) {
-      throw new HttpException(
-        'Данное свойство уже существует',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
     const createdProperty = await this.propertyRepository.create(dto);
     const category = await this.categoryService.findOne(dto.category_id);
     await createdProperty.$set('categories', category.id);
@@ -38,7 +28,6 @@ export class PropertiesService {
 
   async getPropertiesByCategory(category_id: number) {
     const category = await this.categoryService.findOne(category_id);
-    console.log(category);
     if (!category) {
       throw new HttpException(
         'Категория не была найдена',
