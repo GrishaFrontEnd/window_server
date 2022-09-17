@@ -67,7 +67,7 @@ export class ItemsService {
   }
 
   async findByCategories(category_id: number, limit: number, offset: number) {
-    const items = await this.itemRepository.findAndCountAll({
+    const items = await this.itemRepository.findAll({
       where: {
         category_id,
       },
@@ -75,7 +75,10 @@ export class ItemsService {
       limit,
       offset,
     });
-    return items;
+    return {
+      rows: items,
+      count: (await this.getAllByCategory(category_id)).length,
+    };
   }
 
   async findByTitle(title: string, limit: number, offset: number) {
