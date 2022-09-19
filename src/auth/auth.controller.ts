@@ -16,7 +16,7 @@ export class AuthController {
   @Get('/me')
   async me(@Headers() authorization) {
     const token = authorization.authorization;
-    return this.authService.me(token.split(' ')[1]);
+    return this.authService.me(token.split(' ')[1] || '');
   }
 
   @Post('/registration')
