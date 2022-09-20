@@ -74,11 +74,8 @@ export class CategoriesService {
         HttpStatus.NOT_FOUND,
       );
     }
+    await this.itemsService.setCategoryIfDelete(category.id);
     await category.$remove('property', [category.id]);
-    let items = await this.itemsService.getAllByCategory(category.id);
-    for (let elem of items) {
-      await this.itemsService.remove(elem.id);
-    }
     return await this.categoryRepository.destroy({
       where: {
         id,

@@ -56,6 +56,23 @@ export class ItemsService {
     });
   }
 
+  async setCategoryIfDelete(category: number) {
+    const items = await this.itemRepository.findAll({
+      where: { category_id: category },
+    });
+    if (!items || items.length === 0) {
+      throw new HttpException(
+        'Товаров в данной категории не найдено',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    await this.itemRepository.update(
+      { category_id: 1 },
+      { where: { category_id: category } },
+    );
+    return true;
+  }
+
   async findAll(limit: number, offset: number) {
     const items = await this.itemRepository.findAndCountAll({
       include: { all: true },

@@ -16,7 +16,11 @@ export class AuthController {
   @Get('/me')
   async me(@Headers() authorization) {
     const token = authorization.authorization;
-    return this.authService.me(token.split(' ')[1] || '');
+    if (token) {
+      return this.authService.me(token.split(' ')[1]);
+    } else if (!token || token === undefined || token === null) {
+      return this.authService.unlogUser();
+    }
   }
 
   @Post('/registration')

@@ -43,15 +43,18 @@ export class AuthService {
     return this.generateToken(user);
   }
 
+  unlogUser() {
+    return {
+      token: '',
+      email: '',
+      isAdmin: false,
+    };
+  }
+
   async me(token: string) {
     const isVerifyToken = await this.jwtService.verify(token);
     if (!isVerifyToken) {
-      // throw new HttpException('Токен не верифицирован', HttpStatus.FORBIDDEN);
-      return {
-        token: '',
-        email: '',
-        isAdmin: false,
-      };
+      throw new HttpException('Токен не верифицирован', HttpStatus.FORBIDDEN);
     }
     const decoded: any = this.jwtService.decode(token);
     return {
