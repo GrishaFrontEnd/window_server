@@ -13,10 +13,10 @@ import {
 } from '@nestjs/common';
 import { ItemsService } from './items.service';
 import { CreateItemDto } from './dto/create-item.dto';
-import { UpdateItemDto } from './dto/update-item.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { RolesGuards } from 'src/auth/roles.guards';
 import { Roles } from 'src/auth/roles-auth.decorator';
+import { UpdateItemDataDto } from './dto/update-item_data.dto';
 
 @Controller('items')
 export class ItemsController {
@@ -64,13 +64,23 @@ export class ItemsController {
     return this.itemsService.findOne(+id);
   }
 
-  // @Patch()
-  // @Roles('ADMIN')
-  // @UseGuards(RolesGuards)
-  // @UseInterceptors(FileInterceptor('image'))
-  // update(@Body() updateItemDto: UpdateItemDto, @UploadedFile() image: Express.Multer.File) {
-  //   return this.itemsService.update(updateItemDto, image);
-  // }
+  @Patch('/image')
+  @Roles('ADMIN')
+  @UseGuards(RolesGuards)
+  @UseInterceptors(FileInterceptor('image'))
+  updateImage(
+    @Body('id') id: string,
+    @UploadedFile() image: Express.Multer.File,
+  ) {
+    return this.itemsService.updateImage(+id, image);
+  }
+
+  @Patch('/data')
+  @Roles('ADMIN')
+  @UseGuards(RolesGuards)
+  updateData(@Body() updateDataDto: UpdateItemDataDto) {
+    return this.itemsService.updateData(updateDataDto);
+  }
 
   @Delete(':id')
   @Roles('ADMIN')

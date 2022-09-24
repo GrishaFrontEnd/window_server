@@ -8,7 +8,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { FileService } from 'src/file/file.service';
 import { CreateItemDto } from './dto/create-item.dto';
-import { UpdateItemDto } from './dto/update-item.dto';
+import { UpdateItemDataDto } from './dto/update-item_data.dto';
 import { ItemProperty } from './entities/item-property.entity';
 import { Item } from './entities/item.entity';
 
@@ -172,8 +172,8 @@ export class ItemsService {
     };
   }
 
-  async update(updateItemDto: UpdateItemDto, image: any) {
-    const candidate = await this.itemRepository.findByPk(updateItemDto.id);
+  async updateImage(id: number, image: any) {
+    const candidate = await this.itemRepository.findByPk(id);
     if (!candidate) {
       throw new HttpException(
         'Не существует данного предмета',
@@ -183,16 +183,28 @@ export class ItemsService {
     await this.fileService.removeFile(candidate.image);
     const updateImage = await this.fileService.createFile(image);
     const updatedItem = await this.itemRepository.update(
-      { ...updateItemDto, image: updateImage },
-      { where: { id: updateItemDto.id } },
+      { image: updateImage },
+      { where: { id: id } },
     );
-    for (let i = 0; i < updateItemDto.property.length; i++) {
+    return updatedItem;
+  }
+
+  async updateData(updateDataDto: UpdateItemDataDto) {
+    const candidate = await this.itemRepository.findByPk(updateDataDto.id);
+    if (!candidate) {
+      throw new NotFoundException('Товара с такими id найдено не было');
+    }
+    const updatedItem = await this.itemRepository.update(
+      { ...updateDataDto },
+      { where: { id: updateDataDto.id } },
+    );
+    for (let i = 0; i < updateDataDto.property.length; i++) {
       await this.itemPropertyRepostitory.update(
         {
-          property: updateItemDto[i].property,
-          value: updateItemDto[i].value,
+          property: updateDataDto.property[i],
+          value: updateDataDto.value[i],
         },
-        { where: { item_id: updateItemDto.id } },
+        { where: { item_id: updateDataDto.id } },
       );
     }
     return updatedItem;
