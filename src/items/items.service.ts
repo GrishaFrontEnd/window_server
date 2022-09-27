@@ -8,7 +8,11 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { FileService } from 'src/file/file.service';
 import { CreateItemDto } from './dto/create-item.dto';
-import { UpdateItemDataDto } from './dto/update-item_data.dto';
+import { UpdateItemCountDto } from './dto/update-item_count.dto';
+import { UpdateItemImageDto } from './dto/update-item_image.dto';
+import { UpdateItemPriceDto } from './dto/update-item_price.dto';
+import { UpdateItemPropertiesDto } from './dto/update-item_properties.dto';
+import { UpdateItemTitleDto } from './dto/update-item_title.dto';
 import { ItemProperty } from './entities/item-property.entity';
 import { Item } from './entities/item.entity';
 
@@ -74,13 +78,16 @@ export class ItemsService {
   }
 
   async findAll(limit: number, offset: number) {
-    const items = await this.itemRepository.findAndCountAll({
+    const items = await this.itemRepository.findAll({
       include: { all: true },
       limit,
       offset,
       order: [['id', 'DESC']],
     });
-    return items;
+    return {
+      rows: items,
+      count: (await this.itemRepository.findAll()).length,
+    };
   }
 
   async findByCategories(category_id: number, limit: number, offset: number) {
@@ -99,7 +106,7 @@ export class ItemsService {
   }
 
   async findByTitle(title: string, limit: number, offset: number) {
-    let items = await this.itemRepository.findAndCountAll({
+    let items = await this.itemRepository.findAll({
       where: {
         [Op.or]: [
           {
@@ -122,7 +129,10 @@ export class ItemsService {
       limit,
       offset,
     });
-    return items;
+    return {
+      rows: items,
+      count: (await this.itemRepository.findAll()).length,
+    };
   }
 
   async findByTitleAndCategories(
@@ -131,7 +141,7 @@ export class ItemsService {
     limit: number,
     offset: number,
   ) {
-    let items = await this.itemRepository.findAndCountAll({
+    let items = await this.itemRepository.findAll({
       where: {
         [Op.or]: [
           {
@@ -155,7 +165,10 @@ export class ItemsService {
       limit,
       offset,
     });
-    return items;
+    return {
+      rows: items,
+      count: (await this.itemRepository.findAll()).length,
+    };
   }
 
   async findOne(id: number) {
@@ -172,8 +185,8 @@ export class ItemsService {
     };
   }
 
-  async updateImage(id: number, image: any) {
-    const candidate = await this.itemRepository.findByPk(id);
+  async updateImage(dto: UpdateItemImageDto, image: Express.Multer.File) {
+    const candidate = await this.itemRepository.findByPk(+dto.id);
     if (!candidate) {
       throw new HttpException(
         'Не существует данного предмета',
@@ -184,30 +197,53 @@ export class ItemsService {
     const updateImage = await this.fileService.createFile(image);
     const updatedItem = await this.itemRepository.update(
       { image: updateImage },
-      { where: { id: id } },
+      { where: { id: +dto.id } },
     );
-    return updatedItem;
+    return await this.itemRepository.findByPk(+dto.id);
   }
 
-  async updateData(updateDataDto: UpdateItemDataDto) {
-    const candidate = await this.itemRepository.findByPk(updateDataDto.id);
+  async setCount(dto: UpdateItemCountDto) {
+    const candidate = await this.itemRepository.findByPk(dto.id);
     if (!candidate) {
       throw new NotFoundException('Товара с такими id найдено не было');
     }
-    const updatedItem = await this.itemRepository.update(
-      { ...updateDataDto },
-      { where: { id: updateDataDto.id } },
-    );
-    for (let i = 0; i < updateDataDto.property.length; i++) {
+    await candidate.update({ count: dto.count });
+    return candidate;
+  }
+
+  async updateTitle(dto: UpdateItemTitleDto) {
+    const candidate = await this.itemRepository.findByPk(dto.id);
+    if (!candidate) {
+      throw new NotFoundException('Товара с такими id найдено не было');
+    }
+    await candidate.update({ title: dto.title });
+    return candidate;
+  }
+
+  async updatePrice(dto: UpdateItemPriceDto) {
+    const candidate = await this.itemRepository.findByPk(dto.id);
+    if (!candidate) {
+      throw new NotFoundException('Товара с такими id найдено не было');
+    }
+    await candidate.update({ price: dto.price });
+    return candidate;
+  }
+
+  async updateProperties(properties: UpdateItemPropertiesDto) {
+    const candidate = await this.itemRepository.findByPk(properties.id);
+    if (!candidate) {
+      throw new NotFoundException('Товара с такими id найдено не было');
+    }
+    for (let i = 0; i < properties.property.length; i++) {
       await this.itemPropertyRepostitory.update(
         {
-          property: updateDataDto.property[i],
-          value: updateDataDto.value[i],
+          property: properties.property[i],
+          value: properties.value[i],
         },
-        { where: { item_id: updateDataDto.id } },
+        { where: { item_id: properties.id } },
       );
     }
-    return updatedItem;
+    return candidate;
   }
 
   async remove(id: number) {

@@ -16,7 +16,11 @@ import { CreateItemDto } from './dto/create-item.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { RolesGuards } from 'src/auth/roles.guards';
 import { Roles } from 'src/auth/roles-auth.decorator';
-import { UpdateItemDataDto } from './dto/update-item_data.dto';
+import { UpdateItemPropertiesDto } from './dto/update-item_properties.dto';
+import { UpdateItemCountDto } from './dto/update-item_count.dto';
+import { UpdateItemPriceDto } from './dto/update-item_price.dto';
+import { UpdateItemTitleDto } from './dto/update-item_title.dto';
+import { UpdateItemImageDto } from './dto/update-item_image.dto';
 
 @Controller('items')
 export class ItemsController {
@@ -69,17 +73,39 @@ export class ItemsController {
   @UseGuards(RolesGuards)
   @UseInterceptors(FileInterceptor('image'))
   updateImage(
-    @Body('id') id: string,
     @UploadedFile() image: Express.Multer.File,
+    @Body() dto: UpdateItemImageDto,
   ) {
-    return this.itemsService.updateImage(+id, image);
+    return this.itemsService.updateImage(dto, image);
   }
 
-  @Patch('/data')
+  @Patch('/title')
   @Roles('ADMIN')
   @UseGuards(RolesGuards)
-  updateData(@Body() updateDataDto: UpdateItemDataDto) {
-    return this.itemsService.updateData(updateDataDto);
+  updateTitle(@Body() dto: UpdateItemTitleDto) {
+    return this.itemsService.updateTitle(dto);
+  }
+
+  @Patch('/price')
+  @Roles('ADMIN')
+  @UseGuards(RolesGuards)
+  updatePrice(@Body() dto: UpdateItemPriceDto) {
+    return this.itemsService.updatePrice(dto);
+  }
+
+  @Patch('/count')
+  @Roles('ADMIN')
+  @UseGuards(RolesGuards)
+  setCountItem(@Body() dto: UpdateItemCountDto) {
+    console.log(dto);
+    return this.itemsService.setCount(dto);
+  }
+
+  @Patch('/properties')
+  @Roles('ADMIN')
+  @UseGuards(RolesGuards)
+  updateProperties(@Body() updateItemProperties: UpdateItemPropertiesDto) {
+    return this.itemsService.updateProperties(updateItemProperties);
   }
 
   @Delete(':id')
